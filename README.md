@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" width="140" alt="Checkmate logo">
+<img src="assets/logo.png" width="700" alt="Checkmate logo">
 
 # Checkmate
 
