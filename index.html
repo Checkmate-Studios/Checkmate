@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkmate — Make your own anime. Free. Forever.</title>
+  <meta name="description" content="A friendly, professional-minded 2D animation studio for desktop. Easy enough for your first flipbook. Built around a real X-sheet so it can grow with you." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="26" height="26">
+            <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 8v16M9 16l8-8M9 16l8 8" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="23" cy="16" r="3.2" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">Checkmate</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#why">Why</a>
+        <a href="#features">Features</a>
+        <a href="#xshet">X-sheet</a>
+        <a href="#start">Get started</a>
+        <a href="#roadmap">Roadmap</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="ghost-link" href="https://github.com/Checkmate-Studios/Checkmate" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn btn-dark" href="#start">Download</a>
+        <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <span class="dot"></span> v0.1 · Open source · MIT
+        </div>
+        <h1>
+          Make your own anime.<br/>
+          <em>Free. Forever.</em>
+        </h1>
+        <p class="lede">
+          A friendly, professional-minded 2D animation studio for desktop.
+          Easy enough for your first flipbook. Built around a real X-sheet,
+          so it can grow with you.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn btn-dark btn-lg" href="#start">Get Checkmate</a>
+          <a class="btn btn-outline btn-lg" href="#demo">Watch it move →</a>
+        </div>
+
+        <ul class="hero-badges">
+          <li><strong>.NET 8</strong></li>
+          <li><strong>Avalonia</strong> UI</li>
+          <li><strong>Win · macOS · Linux</strong></li>
+        </ul>
+      </div>
+
+      <!-- Animated X-sheet mock -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="window">
+          <div class="window-bar">
+            <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+            <span class="window-title">scene_01.checkmate</span>
+          </div>
+          <div class="window-body">
+            <div class="canvas-preview">
+              <svg viewBox="0 0 300 220" class="ball-svg">
+                <line x1="20" y1="180" x2="280" y2="180" stroke="#c9c2b4" stroke-width="1" stroke-dasharray="3 4"/>
+                <g class="ball-frames">
+                  <circle cx="40"  cy="180" r="14" class="ball ghost-1"/>
+                  <circle cx="90"  cy="160" r="14" class="ball ghost-2"/>
+                  <circle cx="140" cy="130" r="14" class="ball ghost-3"/>
+                  <circle cx="190" cy="140" r="14" class="ball ghost-4"/>
+                  <circle cx="240" cy="180" r="14" class="ball live"/>
+                </g>
+              </svg>
+              <div class="canvas-tag">frame 5 / 24</div>
+            </div>
+            <div class="xshet-mini">
+              <div class="xshet-head">
+                <span>Frame</span><span>A</span><span>B</span><span>C</span>
+              </div>
+              <div class="xshet-rows"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-rule"></div>
+  </section>
+
+  <!-- ============ WHY ============ -->
+  <section class="section" id="why">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Why this exists</span>
+        <h2>There was a gap in the middle.</h2>
+        <p class="section-sub">
+          I'm an anime fan. I wanted to animate something of my own, so I went looking for a tool.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="compare-card">
+          <h3>FlipaClip</h3>
+          <p class="compare-tag">Lovely and easy — but runs out of road quickly.</p>
+        </article>
+        <article class="compare-card">
+          <h3>OpenToonz</h3>
+          <p class="compare-tag">Genuinely professional — genuinely hard to start.</p>
+        </article>
+        <article class="compare-card">
+          <h3>Adobe Animate</h3>
+          <p class="compare-tag">Does everything — costs money every month.</p>
+        </article>
+        <article class="compare-card highlight">
+          <h3>Checkmate</h3>
+          <p class="compare-tag">Simple on day one. Doesn't hit a wall on day thirty.</p>
+        </article>
+      </div>
+
+      <blockquote class="pullquote">
+        <p>“Start like a flipbook, grow like a studio.”</p>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="section section-alt" id="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">What's in the box</span>
+        <h2>Everything you need to draw, time, and ship a scene.</h2>
+        <p class="section-sub">Early, but honest — here's what works <em>today</em>.</p>
+      </div>
+
+      <div class="feature-grid">
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 20c3-1 5-4 6-8 1-3 3-6 6-7 3-1 6 0 6 2 0 3-4 3-6 5-2 2-3 5-4 8H3z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Draw</h3>
+          <p>Seven brushes with distinct feel — Pen, G-Pen, Pencil, Marker, Airbrush, plus hard & soft erasers. Pressure-sensitive. Size 1–300 px, opacity, and a stabilizer that actually helps.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Colour</h3>
+          <p>Full colour picker, eyedropper (hold Alt), and 13 curated palettes — Classic, Anime, Pastel, Vivid pop, Neon cyber, Sunset, Sakura, Retro 8-bit and more. Your custom colours persist.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M7 10h4M7 14h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="18" cy="10" r="1.4" fill="currentColor"/></svg>
+          </div>
+          <h3>Animate</h3>
+          <p>Layers, onion skin (red before / green after, 0–4 frames), timeline with 1–60 FPS playback, and buttons for add, hold, delete, new drawing, and copy-held.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16M4 9h16M4 14h16M4 19h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 4v15M14 4v15" stroke="currentColor" stroke-width="1.4" stroke-dasharray="1 3" stroke-linecap="round"/></svg>
+          </div>
+          <h3>X-sheet</h3>
+          <p>The part I'm proudest of. A real exposure sheet: numbers mark starts, lines are holds, ticks are ends. One-click retiming on 1s, 2s, or 3s.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 6v12l8-6-8-6zM12 6v12l8-6-8-6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Share</h3>
+          <p>Export MP4 (H.264, plays everywhere) via FFmpeg, or PNG sequence at full resolution. Frame-range picker on both. Save and open <code>.checkmate</code> projects.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.6L20 10l-4.4 3.6L16.5 20 12 17l-4.5 3 .9-6.4L4 10l5.8-1.4L12 3z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Polish</h3>
+          <p>Animated splash screen, cached rendering so heavy frames stay smooth, and undo / redo across everything — including layer and timeline edits.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ X-SHEET ============ -->
+  <section class="section xshet-section" id="xshet">
+    <div class="container xshet-grid">
+      <div class="xshet-copy">
+        <span class="kicker">The X-sheet</span>
+        <h2>Anime isn't drawn on every frame.</h2>
+        <p>
+          A drawing is held for two or three frames — <em>animating on 2s</em> — and studios plan that
+          on an exposure sheet. Rows are frames. Columns are layers.
+        </p>
+        <p>Checkmate has one, built in.</p>
+
+        <ul class="tick-list">
+          <li><span class="num">N</span> A number marks where a drawing starts</li>
+          <li><span class="ln">│</span> A line is how long it's held</li>
+          <li><span class="tk">✓</span> A tick is where it ends</li>
+          <li><span class="num">↕</span> Click to jump, drag to scrub</li>
+          <li><span class="num">2s</span> One-click retiming on 1s / 2s / 3s</li>
+          <li><span class="num">±</span> Hold + / Hold − to stretch or shrink a drawing</li>
+        </ul>
+      </div>
+
+      <div class="xshet-demo">
+        <div class="xshet-panel">
+          <div class="panel-title">
+            <span>X-sheet</span>
+            <span class="panel-hint">drag to scrub</span>
+          </div>
+          <table class="xshet-table" id="xshet-table">
+            <!-- filled by JS -->
+          </table>
+          <div class="panel-foot">
+            <button class="chip active" data-timing="1">1s</button>
+            <button class="chip" data-timing="2">2s</button>
+            <button class="chip" data-timing="3">3s</button>
+            <span class="panel-foot-note">Active layer · <strong>Character A</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUICK START ============ -->
+  <section class="section section-alt" id="start">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Get started</span>
+        <h2>Your first animation in five minutes.</h2>
+      </div>
+
+      <div class="two-col">
+        <ol class="steps">
+          <li><span class="step-n">1</span>Draw a ball on the left. <em>Just a circle.</em></li>
+          <li><span class="step-n">2</span>Press <kbd>Insert</kbd>. Onion skin shows the last ball in red.</li>
+          <li><span class="step-n">3</span>Draw the ball a little further right, guided by the ghost.</li>
+          <li><span class="step-n">4</span>Repeat a few times.</li>
+          <li><span class="step-n">5</span>Press <kbd>Space</kbd>. Drag the FPS slider until it feels right. <em>12 is classic.</em></li>
+          <li><span class="step-n">6</span>Open the X-sheet, click <strong>2s</strong>. You're animating on twos.</li>
+          <li><span class="step-n">7</span>Export MP4. You've got a video.</li>
+        </ol>
+
+        <div class="install-card">
+          <div class="install-head">
+            <span class="kicker-inline">Run it</span>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="code-label">bash</span>
+              <button class="copy-btn" data-copy="git clone https://github.com/Checkmate-Studios/Checkmate.git
+cd Checkmate
+dotnet run --project src/Checkmate.Desktop">Copy</button>
+            </div>
+            <pre><code><span class="c-prompt">$</span> git clone https://github.com/Checkmate-Studios/Checkmate.git
+<span class="c-prompt">$</span> cd Checkmate
+<span class="c-prompt">$</span> dotnet run --project src/Checkmate.Desktop</code></pre>
+          </div>
+          <p class="install-note">
+            Requires the <strong>.NET 8 SDK</strong>. For MP4 export, install FFmpeg —
+            Checkmate finds it on its own, or asks once and remembers.
+          </p>
+          <div class="install-alt">
+            <span class="alt-label">FFmpeg</span>
+            <code>winget install Gyan.FFmpeg</code>
+            <code>brew install ffmpeg</code>
+            <code>sudo apt install ffmpeg</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SHORTCUTS ============ -->
+  <section class="section" id="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Keyboard &amp; mouse</span>
+        <h2>Shortcuts you'll actually use.</h2>
+      </div>
+
+      <div class="shortcut-grid">
+        <div class="shortcut-group">
+          <h4>Tools</h4>
+          <div class="sc-row"><span>Pen · G-Pen · Pencil · Marker · Airbrush</span><kbd>B</kbd><kbd>G</kbd><kbd>P</kbd><kbd>M</kbd><kbd>A</kbd></div>
+          <div class="sc-row"><span>Eraser · Soft eraser</span><kbd>E</kbd><kbd>⇧E</kbd></div>
+          <div class="sc-row"><span>Eyedropper</span><kbd>I</kbd></div>
+          <div class="sc-row"><span>Text tool</span><kbd>T</kbd></div>
+          <div class="sc-row"><span>Brush smaller / bigger</span><kbd>[</kbd><kbd>]</kbd></div>
+        </div>
+
+        <div class="shortcut-group">
+          <h4>Frames</h4>
+          <div class="sc-row"><span>Play / pause</span><kbd>Space</kbd></div>
+          <div class="sc-row"><span>Previous / next frame</span><kbd>,</kbd><kbd>.</kbd></div>
+          <div class="sc-row"><span>Add frame / add hold</span><kbd>Ins</kbd><kbd>⇧Ins</kbd></div>
+          <div class="sc-row"><span>Delete current frame</span><kbd>Del</kbd></div>
+          <div class="sc-row"><span>New drawing here / copy held</span><kbd>N</kbd><kbd>D</kbd></div>
+          <div class="sc-row"><span>Hold longer / shorter</span><kbd>=</kbd><kbd>-</kbd></div>
+          <div class="sc-row"><span>Onion skin toggle</span><kbd>O</kbd></div>
+        </div>
+
+        <div class="shortcut-group">
+          <h4>View &amp; Edit</h4>
+          <div class="sc-row"><span>Zoom · rotate · pan</span><kbd>wheel</kbd><kbd>⇧wheel</kbd><kbd>RMB</kbd></div>
+          <div class="sc-row"><span>Undo / redo</span><kbd>⌘Z</kbd><kbd>⌘Y</kbd></div>
+        </div>
+      </div>
+
+      <p class="undo-note">
+        Everything is undoable — so don't be afraid to press things.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT'S BUILT ============ -->
+  <section class="section section-alt" id="built">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">How it's built</span>
+        <h2>Small core. Sharp tools. No magic.</h2>
+      </div>
+
+      <div class="two-col built-grid">
+        <div class="tree-card">
+<pre class="tree"><code>Checkmate/
+├─ src/
+│  ├─ Checkmate.Core/       <span class="tree-c">the brain: model, editing, undo/redo, save/load</span>
+│  └─ Checkmate.Desktop/    <span class="tree-c">the face: Avalonia UI, MVVM, Skia, export</span>
+└─ tests/
+   └─ Checkmate.Core.Tests/ <span class="tree-c">xUnit tests for the core</span></code></pre>
+        </div>
+
+        <ul class="decision-list">
+          <li>
+            <h4>Vector strokes, not pixels.</h4>
+            <p>Every line is points + pressure + brush, rendered with SkiaSharp. Clean line art, cheap undo, full-resolution exports.</p>
+          </li>
+          <li>
+            <h4>The exposure model.</h4>
+            <p>A layer stores drawings keyed by start frame; a drawing holds until the next. Holds are free. The X-sheet is just a window onto that data.</p>
+          </li>
+          <li>
+            <h4>A tested core.</h4>
+            <p>All editing flows through one <code>Editor</code> class with no UI dependencies, covered by 18 unit tests.</p>
+          </li>
+          <li>
+            <h4>Fast while you draw.</h4>
+            <p>Finished drawings cached as bitmaps; only the live stroke renders on top. Translucent brushes and erasers still come out right.</p>
+          </li>
+          <li>
+            <h4>Video without temp files.</h4>
+            <p>Frames stream straight into FFmpeg's input. Low FPS is written at 24 fps with repeats, so every player accepts it.</p>
+          </li>
+        </ul>
+      </div>
+
+      <div class="stack">
+        <span class="stack-label">Built with</span>
+        <span class="pill">C# / .NET 8</span>
+        <span class="pill">Avalonia UI</span>
+        <span class="pill">SkiaSharp</span>
+        <span class="pill">CommunityToolkit.Mvvm</span>
+        <span class="pill">xUnit</span>
+        <span class="pill">FFmpeg</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIMITATIONS ============ -->
+  <section class="section" id="limits">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Honest limitations</span>
+        <h2>What's <em>not</em> in the box — yet.</h2>
+        <p class="section-sub">I'd rather you hear it from me.</p>
+      </div>
+      <ul class="limits">
+        <li>No lasso / move / transform yet. Text can't be edited after placing.</li>
+        <li>No paint bucket yet — colouring is by brush. Gap-closing bucket is next.</li>
+        <li>No audio, camera moves, or GIF export yet.</li>
+        <li>Project files are plain JSON — great for diffing, big for long animations.</li>
+        <li>One scene per project.</li>
+        <li>Developed and tested mainly on Windows. Mac/Linux reports welcome.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ ROADMAP ============ -->
+  <section class="section section-alt" id="roadmap">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Roadmap</span>
+        <h2>Where it's going.</h2>
+      </div>
+
+      <ol class="roadmap">
+        <li class="done"><span class="rm-status">Shipped</span> Pressure brushes · eraser · zoom/pan/rotate · layers · undo/redo</li>
+        <li class="done"><span class="rm-status">Shipped</span> Timeline · playback · onion skin</li>
+        <li class="done"><span class="rm-status">Shipped</span> Seven brushes · size/opacity/smoothing · text tool</li>
+        <li class="done"><span class="rm-status">Shipped</span> Palettes · custom colours · eyedropper</li>
+        <li class="done"><span class="rm-status">Shipped</span> X-sheet with exposure editing, frame insert / delete</li>
+        <li class="done"><span class="rm-status">Shipped</span> PNG sequence &amp; MP4 export with frame ranges</li>
+        <li class="next"><span class="rm-status">Next</span> Lasso select · move · scale · rotate (and moving text)</li>
+        <li class="next"><span class="rm-status">Next</span> Copy &amp; paste frames</li>
+        <li class="next"><span class="rm-status">Next</span> Gap-closing paint bucket for line-art colouring</li>
+        <li><span class="rm-status">Soon</span> Camera layer with pan / zoom / rotate keyframes</li>
+        <li><span class="rm-status">Soon</span> Audio import with scrubbing, for lip sync</li>
+        <li><span class="rm-status">Soon</span> GIF export</li>
+        <li><span class="rm-status">Later</span> Tweening for cut-out animation</li>
+        <li><span class="rm-status">Later</span> Brush editor · shortcut editor</li>
+        <li><span class="rm-status">Later</span> Compact project format (zip), plugin system</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ CONTRIBUTE ============ -->
+  <section class="section" id="contribute">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Contributing</span>
+        <h2>More hands make a better tool.</h2>
+        <p class="section-sub">You don't need to be an expert.</p>
+      </div>
+
+      <div class="contrib-grid">
+        <article class="contrib">
+          <h3>Use it</h3>
+          <p>Tell me what felt wrong. Confusing buttons, slow moments, missing features — all useful.</p>
+        </article>
+        <article class="contrib">
+          <h3>Report bugs</h3>
+          <p>What you did, what you expected, your OS. Three lines is enough.</p>
+        </article>
+        <article class="contrib">
+          <h3>Test Mac &amp; Linux</h3>
+          <p>That's where the most help is needed. Built on Avalonia, so it should just run.</p>
+        </article>
+        <article class="contrib">
+          <h3>Send code</h3>
+          <p>Open an issue first for anything big. <code>Checkmate.Core</code> is the friendliest place to start.</p>
+        </article>
+      </div>
+
+      <p class="contrib-note">
+        Before a PR: run <code>dotnet test</code> and make sure it passes.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta-section">
+    <div class="container cta-inner">
+      <h2>Now go make something that moves.</h2>
+      <div class="cta-row center">
+        <a class="btn btn-dark btn-lg" href="https://github.com/Checkmate-Studios/Checkmate" target="_blank" rel="noopener">View on GitHub</a>
+        <a class="btn btn-outline btn-lg" href="#start">Read the quick start</a>
+      </div>
+      <p class="license">MIT License · Free and open source · Use it, change it, share it — even commercially.</p>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22">
+            <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 8v16M9 16l8-8M9 16l8 8" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="23" cy="16" r="3.2" fill="currentColor"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Checkmate</strong>
+          <p>Make your own anime. Free. Forever.</p>
+        </div>
+      </div>
+
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#features">Features</a>
+        <a href="#xshet">X-sheet</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="https://github.com/Checkmate-Studios/Checkmate" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+
+      <p class="footer-thanks">
+        Thank you to the teams behind Avalonia, SkiaSharp, FFmpeg and the .NET community.
+        And to everyone who has ever wanted to bring a drawing to life.
+      </p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
