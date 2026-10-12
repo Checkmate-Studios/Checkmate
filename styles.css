@@ -1,0 +1,139 @@
+/* =========================================================
+   Checkmate — site styles
+   Palette: warm paper, deep ink, single anime-red accent.
+   ========================================================= */
+
+:root {
+  --paper:      #f5f1e8;
+  --paper-2:    #efe9dc;
+  --ink:        #1a1714;
+  --ink-soft:   #4a443c;
+  --ink-mute:   #8a8275;
+  --rule:       #d8d0c0;
+  --rule-soft:  #e6dfd0;
+  --accent:     #c8402d;   /* anime red */
+  --accent-2:   #2b4a3f;   /* deep green */
+  --ghost-r:    #d94a3a;
+  --ghost-g:    #3f8b5f;
+  --code-bg:    #211e1a;
+  --code-fg:    #ece5d8;
+
+  --radius:     10px;
+  --radius-lg:  16px;
+  --max:        1120px;
+
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* subtle paper texture via repeating grid, echoing the X-sheet */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(26,23,20,.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26,23,20,.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0;
+}
+
+.container {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  z-index: 1;
+}
+
+a { color: inherit; text-decoration: none; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--ink);
+}
+
+h1 em, h2 em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+p { margin: 0; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: rgba(26,23,20,.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 7px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* ============ NAV ============ */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(245,241,232,.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+}
+.brand-mark { display: inline-flex; color: var(--ink); }
+.brand-name {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 26
