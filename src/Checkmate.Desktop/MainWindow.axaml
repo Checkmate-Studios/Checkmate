@@ -1,0 +1,238 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Checkmate.Desktop.Controls"
+        x:Class="Checkmate.Desktop.MainWindow"
+        Title="Checkmate" Width="1440" Height="880" MinWidth="1120" MinHeight="640">
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}" />
+    <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}" />
+    <KeyBinding Gesture="B" Command="{Binding SelectToolCommand}" CommandParameter="Pen" />
+    <KeyBinding Gesture="G" Command="{Binding SelectToolCommand}" CommandParameter="GPen" />
+    <KeyBinding Gesture="P" Command="{Binding SelectToolCommand}" CommandParameter="Pencil" />
+    <KeyBinding Gesture="M" Command="{Binding SelectToolCommand}" CommandParameter="Marker" />
+    <KeyBinding Gesture="A" Command="{Binding SelectToolCommand}" CommandParameter="Airbrush" />
+    <KeyBinding Gesture="E" Command="{Binding SelectToolCommand}" CommandParameter="HardEraser" />
+    <KeyBinding Gesture="Shift+E" Command="{Binding SelectToolCommand}" CommandParameter="SoftEraser" />
+    <KeyBinding Gesture="T" Command="{Binding SelectToolCommand}" CommandParameter="Text" />
+    <KeyBinding Gesture="I" Command="{Binding SelectToolCommand}" CommandParameter="Eyedropper" />
+    <KeyBinding Gesture="OemOpenBrackets" Command="{Binding SizeDownCommand}" />
+    <KeyBinding Gesture="OemCloseBrackets" Command="{Binding SizeUpCommand}" />
+    <KeyBinding Gesture="O" Command="{Binding ToggleOnionCommand}" />
+    <KeyBinding Gesture="N" Command="{Binding NewDrawingCommand}" />
+    <KeyBinding Gesture="D" Command="{Binding DuplicateDrawingCommand}" />
+    <KeyBinding Gesture="OemPlus" Command="{Binding HoldPlusCommand}" />
+    <KeyBinding Gesture="OemMinus" Command="{Binding HoldMinusCommand}" />
+    <KeyBinding Gesture="Insert" Command="{Binding AddFrameCommand}" />
+    <KeyBinding Gesture="Shift+Insert" Command="{Binding AddHoldFrameCommand}" />
+    <KeyBinding Gesture="Delete" Command="{Binding DeleteFrameCommand}" />
+    <KeyBinding Gesture="Space" Command="{Binding TogglePlayCommand}" />
+    <KeyBinding Gesture="OemComma" Command="{Binding PrevFrameCommand}" />
+    <KeyBinding Gesture="OemPeriod" Command="{Binding NextFrameCommand}" />
+  </Window.KeyBindings>
+
+  <Window.Styles>
+    <Style Selector="Border.cell"><Setter Property="Background" Value="#2E2E36" /><Setter Property="CornerRadius" Value="4" /></Style>
+    <Style Selector="Border.cell.current"><Setter Property="Background" Value="#6C5CE7" /></Style>
+    <Style Selector="TextBlock.h"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Opacity" Value="0.7" /></Style>
+    <Style Selector="WrapPanel.bar > Control"><Setter Property="Margin" Value="0,2,8,2" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+  </Window.Styles>
+
+  <DockPanel>
+
+    <!-- Top toolbar -->
+    <Border DockPanel.Dock="Top" Background="#1B1B20" Padding="10,6">
+      <WrapPanel Classes="bar">
+        <Button Content="Open" Click="OnOpenClick" />
+        <Button Content="Save" Click="OnSaveClick" />
+        <Button Content="Export MP4" Click="OnExportMp4Click" IsEnabled="{Binding CanExport}" ToolTip.Tip="Export the animation as an MP4 video (needs FFmpeg)" />
+        <Button Content="Export PNGs" Click="OnExportClick" IsEnabled="{Binding CanExport}" ToolTip.Tip="Export every frame as a PNG image sequence" />
+        <Button Content="Undo" Command="{Binding UndoCommand}" ToolTip.Tip="Ctrl+Z" />
+        <Button Content="Redo" Command="{Binding RedoCommand}" ToolTip.Tip="Ctrl+Y" />
+        <Button Content="T  Text" Command="{Binding SelectToolCommand}" CommandParameter="Text" ToolTip.Tip="Text tool (T): click the canvas, then type" />
+        <CheckBox Content="Onion skin (O)" IsChecked="{Binding OnionEnabled}" />
+        <TextBlock Text="Before" Foreground="#FF6A6A" />
+        <Slider Minimum="0" Maximum="4" Value="{Binding OnionBefore}" Width="70" TickFrequency="1" IsSnapToTickEnabled="True" />
+        <TextBlock Text="After" Foreground="#4FD27A" />
+        <Slider Minimum="0" Maximum="4" Value="{Binding OnionAfter}" Width="70" TickFrequency="1" IsSnapToTickEnabled="True" />
+        <Button Content="Fit view" Click="OnFitClick" ToolTip.Tip="Wheel: zoom   Shift+Wheel: rotate   Right/Middle drag: pan" />
+      </WrapPanel>
+    </Border>
+
+    <!-- Timeline -->
+    <Border DockPanel.Dock="Bottom" Background="#1B1B20" Padding="10" Height="170">
+      <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Classes="bar" Margin="0,0,0,6">
+          <Button Content="◀" Command="{Binding PrevFrameCommand}" ToolTip.Tip="Previous frame ( , )" />
+          <Button Content="Play / Pause" Command="{Binding TogglePlayCommand}" ToolTip.Tip="Space" />
+          <Button Content="▶" Command="{Binding NextFrameCommand}" ToolTip.Tip="Next frame ( . )" />
+          <TextBlock Text="{Binding FrameText}" />
+          <TextBlock Text="FPS" />
+          <Slider Minimum="1" Maximum="60" Value="{Binding Fps}" Width="110" />
+          <TextBlock Text="{Binding Fps, StringFormat={}{0:0}}" Width="24" />
+          <Button Content="+ Frame" Command="{Binding AddFrameCommand}" ToolTip.Tip="Add a frame after this one with a blank drawing on the active layer (Insert)" />
+          <Button Content="+ Hold frame" Command="{Binding AddHoldFrameCommand}" ToolTip.Tip="Add a frame after this one where every layer simply holds (Shift+Insert)" />
+          <Button Content="Delete frame" Command="{Binding DeleteFrameCommand}" ToolTip.Tip="Delete this frame on every layer (Delete). Undo brings it back." />
+          <Button Content="New drawing here (N)" Command="{Binding NewDrawingCommand}" ToolTip.Tip="Start a fresh drawing on a held frame" />
+          <TextBlock Text="{Binding Status}" Opacity="0.7" />
+        </WrapPanel>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Frames}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="3" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="cell" Classes.current="{Binding IsCurrent}" Width="38" Height="56">
+                  <Button Command="{Binding GoToCommand}" Background="Transparent" Padding="0"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          HorizontalContentAlignment="Center">
+                    <StackPanel Spacing="6" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Number}" FontSize="11" HorizontalAlignment="Center" />
+                      <Ellipse Width="9" Height="9" Fill="#FFB86C" IsVisible="{Binding HasKey}" />
+                    </StackPanel>
+                  </Button>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+
+    <!-- Layers + X-sheet (right) -->
+    <Border DockPanel.Dock="Right" Background="#1B1B20" Padding="10" Width="330">
+      <Grid RowDefinitions="Auto,*">
+
+        <DockPanel Grid.Row="0" MaxHeight="190">
+          <TextBlock DockPanel.Dock="Top" Classes="h" Text="LAYERS" Margin="0,0,0,6" />
+          <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+            <Button Content="+ Layer" Command="{Binding AddLayerCommand}" />
+            <Button Content="Delete layer" Command="{Binding DeleteLayerCommand}" />
+          </StackPanel>
+          <ListBox ItemsSource="{Binding Layers}" SelectedItem="{Binding SelectedLayer}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <CheckBox IsChecked="{Binding IsVisible}" ToolTip.Tip="Visible" />
+                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+
+        <DockPanel Grid.Row="1" Margin="0,14,0,0">
+          <TextBlock DockPanel.Dock="Top" Classes="h" Text="X-SHEET" />
+          <TextBlock DockPanel.Dock="Top" Opacity="0.55" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,4"
+                     Text="Rows are frames, columns are layers. A number starts a drawing, the line below it is the hold. Click or drag to jump between frames." />
+
+          <WrapPanel DockPanel.Dock="Top" Classes="bar">
+            <TextBlock Text="Active layer on" Opacity="0.7" />
+            <Button Content="1s" Command="{Binding AnimateOnCommand}" CommandParameter="1" ToolTip.Tip="Show every drawing on this layer for 1 frame" />
+            <Button Content="2s" Command="{Binding AnimateOnCommand}" CommandParameter="2" ToolTip.Tip="Show every drawing on this layer for 2 frames (classic anime timing)" />
+            <Button Content="3s" Command="{Binding AnimateOnCommand}" CommandParameter="3" ToolTip.Tip="Show every drawing on this layer for 3 frames" />
+          </WrapPanel>
+          <WrapPanel DockPanel.Dock="Top" Classes="bar" Margin="0,0,0,6">
+            <Button Content="Hold +" Command="{Binding HoldPlusCommand}" ToolTip.Tip="Hold this drawing one frame longer (+)" />
+            <Button Content="Hold −" Command="{Binding HoldMinusCommand}" ToolTip.Tip="Hold this drawing one frame shorter (-)" />
+            <Button Content="+ Frame" Command="{Binding AddFrameCommand}" ToolTip.Tip="Add a frame after this one (Insert)" />
+            <Button Content="Delete frame" Command="{Binding DeleteFrameCommand}" ToolTip.Tip="Delete this frame on every layer (Delete)" />
+            <Button Content="Copy drawing" Command="{Binding DuplicateDrawingCommand}" ToolTip.Tip="Start a new drawing here as a copy of the held one (D)" />
+            <Button Content="Delete drawing" Command="{Binding DeleteDrawingCommand}" ToolTip.Tip="Remove the drawing that starts on this frame" />
+          </WrapPanel>
+
+          <Border Background="#141418" CornerRadius="6" ClipToBounds="True">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+              <c:XSheetControl Editor="{Binding Editor}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </ScrollViewer>
+          </Border>
+        </DockPanel>
+
+      </Grid>
+    </Border>
+
+    <!-- Tools (left) -->
+    <Border DockPanel.Dock="Left" Background="#1B1B20" Width="250">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="12" Spacing="6">
+
+          <TextBlock Classes="h" Text="TOOLS" />
+          <ListBox ItemsSource="{Binding Tools}" SelectedItem="{Binding SelectedTool}">
+            <ListBox.ItemTemplate>
+              <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <DockPanel Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding BrushSize, StringFormat={}{0:0.#} px}" Opacity="0.8" />
+            <TextBlock Classes="h" Text="SIZE" />
+          </DockPanel>
+          <Slider Minimum="0" Maximum="1" Value="{Binding SizeSlider}" ToolTip.Tip="[ and ] change the size" />
+
+          <DockPanel IsEnabled="{Binding HasOpacity}">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding BrushOpacity, StringFormat={}{0:P0}}" Opacity="0.8" />
+            <TextBlock Classes="h" Text="OPACITY" />
+          </DockPanel>
+          <Slider Minimum="0.05" Maximum="1" Value="{Binding BrushOpacity}" IsEnabled="{Binding HasOpacity}" />
+
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Text="{Binding Smoothing, StringFormat={}{0:0}%}" Opacity="0.8" />
+            <TextBlock Classes="h" Text="SMOOTHING" />
+          </DockPanel>
+          <Slider Minimum="0" Maximum="90" Value="{Binding Smoothing}" ToolTip.Tip="Higher = smoother, steadier lines" />
+
+          <TextBlock Classes="h" Text="COLOR" Margin="0,10,0,0" />
+          <TextBlock Text="Eyedropper: press I, or hold Alt and click the canvas" Opacity="0.55" FontSize="11" TextWrapping="Wrap" />
+          <ColorPicker Color="{Binding BrushColor, Mode=TwoWay}" />
+
+          <TextBlock Classes="h" Text="PALETTE" Margin="0,6,0,0" />
+          <ComboBox ItemsSource="{Binding PaletteSets}" SelectedItem="{Binding SelectedPalette}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate>
+              <DataTemplate><TextBlock Text="{Binding Name}" /></DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <WrapPanel Classes="bar" IsVisible="{Binding IsCustomPalette}">
+            <Button Content="+ Add current" Command="{Binding AddCurrentColorCommand}" ToolTip.Tip="Save the current colour to My colors" />
+            <Button Content="− Remove" Command="{Binding RemoveCurrentColorCommand}" ToolTip.Tip="Remove the current colour from My colors" />
+            <Button Content="Clear" Command="{Binding ClearMyColorsCommand}" ToolTip.Tip="Remove every colour from My colors" />
+          </WrapPanel>
+          <TextBlock IsVisible="{Binding ShowCustomHint}" Opacity="0.55" FontSize="11" TextWrapping="Wrap"
+                     Text="Nothing here yet. Pick a colour above, then press + Add current to keep it." />
+          <ItemsControl ItemsSource="{Binding Palette}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Command="{Binding PickCommand}" ToolTip.Tip="{Binding Hex}" Background="Transparent" Padding="0" Width="30" Height="30">
+                  <Border Background="{Binding Brush}" CornerRadius="5" BorderBrush="#66666E" BorderThickness="1" Margin="3" />
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Classes="h" Text="RECENT" Margin="0,6,0,0" />
+          <ItemsControl ItemsSource="{Binding Recent}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Command="{Binding PickCommand}" ToolTip.Tip="{Binding Hex}" Background="Transparent" Padding="0" Width="30" Height="30">
+                  <Border Background="{Binding Brush}" CornerRadius="5" BorderBrush="#66666E" BorderThickness="1" Margin="3" />
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Canvas -->
+    <c:CanvasControl x:Name="DrawingCanvas" Editor="{Binding Editor}" PickColorCommand="{Binding PickColorFromCanvasCommand}" PlaceTextCommand="{Binding PlaceTextCommand}" />
+
+  </DockPanel>
+</Window>

@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Checkmate.Desktop.Controls"
+        x:Class="Checkmate.Desktop.SplashWindow"
+        Title="Checkmate" Width="780" Height="440" CanResize="False"
+        SystemDecorations="None" WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False" Topmost="True" Background="#090912">
+
+  <Border BorderBrush="#33FFFFFF" BorderThickness="1">
+    <Grid x:Name="Root">
+
+      <c:SplashArt x:Name="Art" />
+
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,26">
+        <Grid x:Name="LogoHost" Width="150" Height="150" HorizontalAlignment="Center"
+              RenderTransformOrigin="50%,50%" Opacity="0">
+          <Border x:Name="Glow" Width="100" Height="100" CornerRadius="50"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  BoxShadow="0 0 70 16 #886C5CE7" />
+          <Image x:Name="Logo" Width="116" Height="116" RenderOptions.BitmapInterpolationMode="HighQuality" />
+          <TextBlock x:Name="Fallback" Text="♚" FontSize="100" Foreground="White"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" />
+        </Grid>
+
+        <TextBlock x:Name="TitleText" Text="CHECKMATE" FontSize="48" FontWeight="Black" LetterSpacing="14"
+                   HorizontalAlignment="Center" Margin="14,10,0,0" Opacity="0">
+          <TextBlock.Foreground>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+              <GradientStop Color="#FFFFFF" Offset="0" />
+              <GradientStop Color="#C9BBFF" Offset="0.6" />
+              <GradientStop Color="#FF9EC4" Offset="1" />
+            </LinearGradientBrush>
+          </TextBlock.Foreground>
+        </TextBlock>
+
+        <TextBlock x:Name="Tagline" Text="MAKE YOUR OWN ANIME" FontSize="14" LetterSpacing="5"
+                   Foreground="#B8B2D6" HorizontalAlignment="Center" Margin="5,8,0,0" Opacity="0" />
+      </StackPanel>
+
+      <TextBlock x:Name="Footer" Text="Free forever   •   Open source   •   Made by anime fans, for anime fans"
+                 FontSize="11" Foreground="#88FFFFFF" HorizontalAlignment="Center"
+                 VerticalAlignment="Bottom" Margin="0,0,0,18" Opacity="0" />
+
+      <Border x:Name="Bar" Height="3" Width="0" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+            <GradientStop Color="#6C5CE7" Offset="0" />
+            <GradientStop Color="#FF4D9D" Offset="1" />
+          </LinearGradientBrush>
+        </Border.Background>
+      </Border>
+
+    </Grid>
+  </Border>
+</Window>
