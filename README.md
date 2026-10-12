@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="assets/logo.png" width="700" alt="Checkmate logo">
+<img width="237" height="237" alt="cropped_circle_image" src="https://github.com/user-attachments/assets/489de46e-9525-4ec9-aeb5-039734bc40f7" />
+
 
 # Checkmate
 
