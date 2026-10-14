@@ -18,6 +18,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <!-- MP3 decoding in pure C# -->
+    <PackageReference Include="NLayer" Version="1.*" />
+    <!-- OpenAL Soft: the sound library for Windows (macOS has its own; Linux uses the system one) -->
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Checkmate.Core\Checkmate.Core.csproj" />

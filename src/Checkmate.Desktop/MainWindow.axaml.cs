@@ -36,6 +36,7 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         Vm.TextPlacementRequested += async point => await PlaceTextAsync(point);
+        Vm.AudioImportRequested += async () => await ImportAudioDialogAsync();
     }
 
     private async Task PlaceTextAsync(Point documentPoint)
@@ -45,6 +46,24 @@ public partial class MainWindow : Window
         item.X = (float)documentPoint.X;
         item.Y = (float)documentPoint.Y;
         Vm.AddText(item);
+    }
+
+    private async Task ImportAudioDialogAsync()
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Add music or sound",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Sound files")
+                {
+                    Patterns = new[] { "*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac", "*.wma", "*.opus" },
+                },
+            },
+        });
+        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        if (path != null) await Vm.ImportAudioAsync(path);
     }
 
     private Task<(int From, int To)?> AskRange(string title) =>

@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using Checkmate.Core.Editing;
 using Checkmate.Core.IO;
 using Checkmate.Core.Model;
+using Checkmate.Core.Audio;
 using Checkmate.Desktop.Rendering;
 using Checkmate.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -18,6 +19,11 @@ public partial class MainViewModel : ObservableObject
     private const int MaxRecent = 12;
 
     private readonly DispatcherTimer _timer = new();
+    private readonly AudioEngine _audio = new();
+    private readonly DispatcherTimer _recordTimer = new() { Interval = TimeSpan.FromMilliseconds(40) };
+    private bool _audioPlaying;
+    private int _mixRevision = -1, _mixFps, _mixFrames;
+    private int _recordStartFrame, _recordingCount;
     private bool _syncing, _loadingTool, _syncSize, _loadingPalette;
     private BrushType _currentType = BrushType.Pen;
     private ToolItem? _lastDrawTool;
@@ -41,6 +47,7 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<Swatch> Palette { get; } = new();
     public ObservableCollection<Swatch> Recent { get; } = new();
     public ObservableCollection<PaletteSet> PaletteSets { get; } = new();
+    public ObservableCollection<AudioClipItem> AudioClips { get; } = new();
 
     [ObservableProperty] private ToolItem? _selectedTool;
     [ObservableProperty] private PaletteSet? _selectedPalette;
@@ -59,6 +66,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private double _onionAfter = 1;
     [ObservableProperty] private string _status = "";
     [ObservableProperty] private bool _isExporting;
+    [ObservableProperty] private AudioClipItem? _selectedClip;
+    [ObservableProperty] private bool _soundEnabled = true;
+    [ObservableProperty] private bool _scrubSound = true;
+    [ObservableProperty] private bool _playAlong = true;
+    [ObservableProperty] private bool _isRecording;
 
     public bool CanExport => !IsExporting;
     partial void OnIsExportingChanged(bool value) => OnPropertyChanged(nameof(CanExport));
@@ -86,7 +98,10 @@ public partial class MainViewModel : ObservableObject
         Editor.Structure += OnStructure;
         Editor.FrameChanged += RefreshTimeline;
         Editor.StrokeCommitted += OnStrokeCommitted;
-        _timer.Tick += (_, _) => Editor.SetFrame((Editor.CurrentFrame + 1) % Editor.Project.FrameCount);
+        _timer.Tick += (_, _) => OnPlaybackTick();
+        _recordTimer.Tick += (_, _) => OnRecordTick();
+        Editor.AudioChanged += OnAudioChanged;
+        Editor.FrameSet += OnFrameSet;
 
         SelectedTool = Tools[0];
         SizeSlider = ToSlider(BrushSize);
@@ -308,7 +323,8 @@ public partial class MainViewModel : ObservableObject
     partial void OnFpsChanged(double value)
     {
         Editor.Project.Fps = (int)Math.Round(value);
-        _timer.Interval = TimeSpan.FromSeconds(1.0 / Math.Max(1, value));
+        UpdateTimerInterval();
+        Editor.NotifyAudioChanged();            // sound positions are measured in frames, so a new frame rate changes the mix
     }
 
     partial void OnSelectedLayerChanged(LayerItem? value)
@@ -380,8 +396,194 @@ public partial class MainViewModel : ObservableObject
     {
         IsPlaying = !IsPlaying;
         Editor.SetPlaying(IsPlaying);
-        _timer.Interval = TimeSpan.FromSeconds(1.0 / Math.Max(1, Fps));
-        if (IsPlaying) _timer.Start(); else _timer.Stop();
+        if (IsPlaying)
+        {
+            _audioPlaying = TryStartAudio(Editor.CurrentFrame);
+            UpdateTimerInterval();
+            _timer.Start();
+        }
+        else
+        {
+            _timer.Stop();
+            _audio.Stop();
+            _audioPlaying = false;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    //  Sound: playback, recording, importing
+    // ------------------------------------------------------------------
+
+    public bool HasAudio => Editor.Project.Audio.Any(c => !c.Muted && c.Data != null);
+    public bool HasSelectedClip => SelectedClip != null;
+    public string RecordButtonText => IsRecording ? "Stop recording" : "Record voice";
+
+    partial void OnSelectedClipChanged(AudioClipItem? value) => OnPropertyChanged(nameof(HasSelectedClip));
+    partial void OnIsRecordingChanged(bool value) => OnPropertyChanged(nameof(RecordButtonText));
+
+    private void UpdateTimerInterval() =>
+        _timer.Interval = _audioPlaying
+            ? TimeSpan.FromMilliseconds(8)                          // follow the sound clock closely
+            : TimeSpan.FromSeconds(1.0 / Math.Max(1, Fps));
+
+    /// <summary>Build (or reuse) the stereo mix of all sounds and hand it to the audio engine.</summary>
+    private bool EnsureMix(out string? error)
+    {
+        if (!_audio.TryInit(out error)) return false;
+        int fps = Math.Max(1, Editor.Project.Fps), frames = Editor.Project.FrameCount;
+        if (_mixRevision != Editor.AudioRevision || _mixFps != fps || _mixFrames != frames)
+        {
+            var mix = AudioMixer.Mix(Editor.Project, 0, frames / (double)fps);
+            _audio.SetMix(mix, AudioMixer.SampleRate);
+            _mixRevision = Editor.AudioRevision;
+            _mixFps = fps;
+            _mixFrames = frames;
+        }
+        return true;
+    }
+
+    private bool TryStartAudio(int frame)
+    {
+        if (!SoundEnabled || !HasAudio) return false;
+        if (!EnsureMix(out var error)) { Status = "Sound unavailable: " + error; return false; }
+        return _audio.Play(frame / (double)Math.Max(1, Editor.Project.Fps));
+    }
+
+    private void OnPlaybackTick()
+    {
+        int count = Editor.Project.FrameCount;
+        int fps = Math.Max(1, Editor.Project.Fps);
+
+        if (_audioPlaying)
+        {
+            if (!_audio.IsPlaying)                                  // the sound ended: that is the end of the animation
+            {
+                if (IsRecording) { FinishRecording(); return; }
+                _audioPlaying = TryStartAudio(0);                   // loop
+                UpdateTimerInterval();
+                Editor.SetFrame(0);
+                return;
+            }
+            Editor.SetFrame(Math.Min((int)(_audio.PositionSeconds * fps), count - 1));
+        }
+        else
+        {
+            int next = (Editor.CurrentFrame + 1) % count;
+            if (next == 0 && IsRecording) { FinishRecording(); return; }
+            Editor.SetFrame(next);
+        }
+    }
+
+    /// <summary>Stepping through frames plays a short blip of sound, so you can find the right frame for a word.</summary>
+    private void OnFrameSet(int frame)
+    {
+        if (IsPlaying || IsRecording || !SoundEnabled || !ScrubSound || !HasAudio) return;
+        if (!EnsureMix(out _)) return;
+        double fps = Math.Max(1, Editor.Project.Fps);
+        _audio.PlaySnippet(frame / fps, Math.Max(0.12, 1.5 / fps));
+    }
+
+    private void OnAudioChanged()
+    {
+        var clips = Editor.Project.Audio;
+        bool same = clips.Count == AudioClips.Count && clips.Zip(AudioClips, (c, i) => ReferenceEquals(c, i.Clip)).All(x => x);
+        if (!same)
+        {
+            var keep = SelectedClip?.Clip;
+            AudioClips.Clear();
+            foreach (var clip in clips) AudioClips.Add(new AudioClipItem(Editor, clip));
+            SelectedClip = AudioClips.FirstOrDefault(i => i.Clip == keep) ?? AudioClips.LastOrDefault();
+        }
+        else
+        {
+            foreach (var item in AudioClips) item.Refresh();
+        }
+        OnPropertyChanged(nameof(HasAudio));
+    }
+
+    // ---- importing ----
+
+    /// <summary>Raised when the user wants to add a sound file; the window shows the file picker.</summary>
+    public event Action? AudioImportRequested;
+
+    [RelayCommand]
+    private void ImportAudio() => AudioImportRequested?.Invoke();
+
+    public async Task ImportAudioAsync(string path)
+    {
+        try
+        {
+            Status = $"Loading {Path.GetFileName(path)}...";
+            var data = await Task.Run(() => AudioImporter.Load(path));
+            var clip = new AudioClip { Name = Path.GetFileNameWithoutExtension(path), Data = data, StartFrame = 0 };
+            Editor.AddAudioClip(clip);
+            SelectedClip = AudioClips.FirstOrDefault(i => i.Clip == clip);
+
+            int needed = (int)Math.Ceiling(data.Duration * Math.Max(1, Editor.Project.Fps));
+            Status = needed > Editor.Project.FrameCount
+                ? $"Added \"{clip.Name}\" ({data.Duration:0.0} s). It needs {needed} frames but your animation has {Editor.Project.FrameCount}: press \"Extend animation to fit\" to keep all of it."
+                : $"Added \"{clip.Name}\" ({data.Duration:0.0} s).";
+        }
+        catch (Exception ex) { Status = "Could not load that sound: " + ex.Message; }
+    }
+
+    [RelayCommand]
+    private void FitToAudio()
+    {
+        int fps = Math.Max(1, Editor.Project.Fps);
+        double end = Editor.Project.Audio.Where(c => c.Data != null)
+                           .Select(c => c.StartFrame / (double)fps + c.Duration)
+                           .DefaultIfEmpty(0).Max();
+        int frames = (int)Math.Ceiling(end * fps);
+        Editor.EnsureFrameCount(frames);
+        Status = $"The animation is now at least {frames} frames long.";
+    }
+
+    [RelayCommand]
+    private void DeleteSelectedClip()
+    {
+        if (SelectedClip != null) Editor.RemoveAudioClip(SelectedClip.Clip);
+    }
+
+    // ---- recording ----
+
+    [RelayCommand]
+    private void ToggleRecord()
+    {
+        if (IsRecording) FinishRecording(); else StartRecording();
+    }
+
+    private void StartRecording()
+    {
+        if (!_audio.TryInit(out var initError)) { Status = "Sound unavailable: " + initError; return; }
+        if (!_audio.StartRecording(out var error)) { Status = error ?? "Could not start recording."; return; }
+
+        IsRecording = true;
+        _recordStartFrame = Editor.CurrentFrame;
+        _recordTimer.Start();
+        Status = "Recording... speak now";
+        if (PlayAlong && !IsPlaying) TogglePlay();                  // watch (and hear) your animation while you speak
+    }
+
+    private void FinishRecording()
+    {
+        _recordTimer.Stop();
+        var data = _audio.StopRecording();
+        IsRecording = false;
+        if (IsPlaying) TogglePlay();
+
+        if (data == null || data.Duration < 0.1) { Status = "Nothing was recorded."; return; }
+        _recordingCount++;
+        var clip = new AudioClip { Name = $"Recording {_recordingCount}", Data = data, StartFrame = _recordStartFrame };
+        Editor.AddAudioClip(clip);
+        SelectedClip = AudioClips.FirstOrDefault(i => i.Clip == clip);
+        Status = $"Recorded {data.Duration:0.0} s, starting at frame {_recordStartFrame + 1}.";
+    }
+
+    private void OnRecordTick()
+    {
+        _audio.PollRecording();
+        Status = $"Recording...  {_audio.RecordedSeconds:0.0} s   (press Stop recording when you are done)";
     }
 
     public void SaveTo(string path)
@@ -391,7 +593,13 @@ public partial class MainViewModel : ObservableObject
         Status = $"Saved {Path.GetFileName(path)}";
     }
 
-    public void OpenFrom(string path) => Editor.Load(ProjectIO.Load(path));
+    public void OpenFrom(string path)
+    {
+        Editor.Load(ProjectIO.Load(path));
+        int missing = Editor.Project.Audio.Count(c => c.Missing);
+        if (missing > 0)
+            Status = $"{missing} sound file(s) could not be found. They belong in the \"{Path.GetFileNameWithoutExtension(path)}_audio\" folder next to the project.";
+    }
 
     public async Task ExportPngSequenceAsync(string folder, int firstFrame, int lastFrame)
     {
@@ -415,8 +623,27 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var progress = new Progress<string>(s => Status = s);
-            int n = await Task.Run(() => Exporter.ExportMp4(Editor, ffmpegPath, outputPath, firstFrame, lastFrame, progress));
-            Status = $"Exported {n} frames to {Path.GetFileName(outputPath)}";
+            bool withSound = HasAudio;
+            int n = await Task.Run(() =>
+            {
+                string? wav = null;
+                try
+                {
+                    if (withSound)       // mix exactly the exported time span into a temporary WAV for FFmpeg
+                    {
+                        int fps = Math.Max(1, Editor.Project.Fps);
+                        var mix = AudioMixer.Mix(Editor.Project, firstFrame / (double)fps, (lastFrame + 1) / (double)fps);
+                        wav = Path.Combine(Path.GetTempPath(), $"checkmate_{Guid.NewGuid():N}.wav");
+                        WavFile.Write(wav, new AudioData(AudioMixer.SampleRate, 2, mix));
+                    }
+                    return Exporter.ExportMp4(Editor, ffmpegPath, outputPath, firstFrame, lastFrame, wav, progress);
+                }
+                finally
+                {
+                    if (wav != null) { try { File.Delete(wav); } catch { /* temp file */ } }
+                }
+            });
+            Status = $"Exported {n} frames{(withSound ? " with sound" : "")} to {Path.GetFileName(outputPath)}";
         }
         catch (Exception ex) { Status = "MP4 export failed: " + ex.Message; }
         finally { IsExporting = false; }

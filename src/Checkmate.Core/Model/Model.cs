@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Checkmate.Core.Audio;
 
 namespace Checkmate.Core.Model;
 
@@ -63,6 +64,23 @@ public sealed class TextItem
     /// <summary>Top-left corner of the text block, in document pixels.</summary>
     public float X { get; set; }
     public float Y { get; set; }
+}
+
+/// <summary>A piece of sound (music, voice recording...) placed on the timeline.</summary>
+public sealed class AudioClip
+{
+    public string Name { get; set; } = "Sound";
+    /// <summary>Animation frame (0-based) where the sound starts.</summary>
+    public int StartFrame { get; set; }
+    public double Volume { get; set; } = 1.0;       // 1 = original loudness
+    public bool Muted { get; set; }
+    /// <summary>File name inside the project's audio folder (set when the project is saved).</summary>
+    public string? File { get; set; }
+
+    [JsonIgnore] public AudioData? Data { get; set; }
+    /// <summary>True when the project file refers to a sound file that could not be found.</summary>
+    [JsonIgnore] public bool Missing { get; set; }
+    [JsonIgnore] public double Duration => Data?.Duration ?? 0;
 }
 
 /// <summary>One drawing (what animators call a "cel").</summary>
@@ -134,6 +152,7 @@ public sealed class Project
     public int Fps { get; set; } = 12;
     public int FrameCount { get; set; } = 24;
     public List<Layer> Layers { get; set; } = new();
+    public List<AudioClip> Audio { get; set; } = new();
 
     public static Project CreateDefault()
     {

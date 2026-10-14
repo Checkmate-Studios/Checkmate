@@ -61,7 +61,7 @@
     </Border>
 
     <!-- Timeline -->
-    <Border DockPanel.Dock="Bottom" Background="#1B1B20" Padding="10" Height="170">
+    <Border DockPanel.Dock="Bottom" Background="#1B1B20" Padding="10" Height="250">
       <DockPanel>
         <WrapPanel DockPanel.Dock="Top" Classes="bar" Margin="0,0,0,6">
           <Button Content="◀" Command="{Binding PrevFrameCommand}" ToolTip.Tip="Previous frame ( , )" />
@@ -75,9 +75,12 @@
           <Button Content="+ Hold frame" Command="{Binding AddHoldFrameCommand}" ToolTip.Tip="Add a frame after this one where every layer simply holds (Shift+Insert)" />
           <Button Content="Delete frame" Command="{Binding DeleteFrameCommand}" ToolTip.Tip="Delete this frame on every layer (Delete). Undo brings it back." />
           <Button Content="New drawing here (N)" Command="{Binding NewDrawingCommand}" ToolTip.Tip="Start a fresh drawing on a held frame" />
+          <Button Content="Add sound..." Command="{Binding ImportAudioCommand}" ToolTip.Tip="Add music or any sound file (wav, mp3, ogg, flac, m4a...)" />
+          <Button Content="{Binding RecordButtonText}" Command="{Binding ToggleRecordCommand}" ToolTip.Tip="Record your voice with the microphone (use headphones if music is playing)" />
           <TextBlock Text="{Binding Status}" Opacity="0.7" />
         </WrapPanel>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="6">
           <ItemsControl ItemsSource="{Binding Frames}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="3" /></ItemsPanelTemplate>
@@ -97,6 +100,8 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+          <c:WaveformControl Editor="{Binding Editor}" HorizontalAlignment="Left" />
+          </StackPanel>
         </ScrollViewer>
       </DockPanel>
     </Border>
@@ -227,6 +232,36 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
 
+
+          <TextBlock Classes="h" Text="SOUND" Margin="0,16,0,0" />
+          <WrapPanel Classes="bar">
+            <Button Content="Add sound..." Command="{Binding ImportAudioCommand}" ToolTip.Tip="Add music or any sound file (wav, mp3, ogg, flac, m4a...)" />
+            <Button Content="{Binding RecordButtonText}" Command="{Binding ToggleRecordCommand}" ToolTip.Tip="Record your voice with the microphone. Use headphones if music is playing." />
+          </WrapPanel>
+          <CheckBox Content="Sound on" IsChecked="{Binding SoundEnabled}" />
+          <CheckBox Content="Hear sound when stepping frames" IsChecked="{Binding ScrubSound}" ToolTip.Tip="Helps you find the right frame for a word or a beat" />
+          <CheckBox Content="Play animation while recording" IsChecked="{Binding PlayAlong}" ToolTip.Tip="Watch (and hear) your animation while you speak, so the timing matches" />
+          <ListBox ItemsSource="{Binding AudioClips}" SelectedItem="{Binding SelectedClip}" MaxHeight="130">
+            <ListBox.ItemTemplate>
+              <DataTemplate><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <StackPanel IsVisible="{Binding HasSelectedClip}" Spacing="6">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Right" Text="{Binding SelectedClip.Volume, StringFormat={}{0:P0}}" Opacity="0.8" />
+              <TextBlock Classes="h" Text="VOLUME" />
+            </DockPanel>
+            <Slider Minimum="0" Maximum="2" Value="{Binding SelectedClip.Volume}" />
+            <DockPanel>
+              <TextBlock Text="Starts at frame" VerticalAlignment="Center" Margin="0,0,10,0" />
+              <NumericUpDown Minimum="1" Maximum="100000" Increment="1" FormatString="0" Value="{Binding SelectedClip.StartFrame}" />
+            </DockPanel>
+            <CheckBox Content="Mute this sound" IsChecked="{Binding SelectedClip.Muted}" />
+            <WrapPanel Classes="bar">
+              <Button Content="Delete sound" Command="{Binding DeleteSelectedClipCommand}" />
+              <Button Content="Extend animation to fit" Command="{Binding FitToAudioCommand}" ToolTip.Tip="Add frames at the end so the whole sound fits" />
+            </WrapPanel>
+          </StackPanel>
         </StackPanel>
       </ScrollViewer>
     </Border>

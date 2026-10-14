@@ -14,7 +14,7 @@ public static class Exporter
     /// player and social site accepts the file; the timing is identical.
     /// </summary>
     public static int ExportMp4(Editor editor, string ffmpegPath, string outputPath,
-                                int firstFrame, int lastFrame, IProgress<string>? progress = null)
+                                int firstFrame, int lastFrame, string? audioPath, IProgress<string>? progress = null)
     {
         int count, w, h, fps;
         lock (editor.SyncRoot)
@@ -37,18 +37,24 @@ public static class Exporter
             RedirectStandardError = true,
             RedirectStandardOutput = true,
         };
-        foreach (var arg in new[]
+        var args = new List<string>
         {
             "-y", "-hide_banner", "-loglevel", "error",
             "-f", "rawvideo", "-pix_fmt", "rgba", "-s", $"{w}x{h}",
             "-framerate", fps.ToString(CultureInfo.InvariantCulture), "-i", "-",
-            "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",        // H.264 needs even dimensions
+        };
+        if (audioPath != null) { args.Add("-i"); args.Add(audioPath); }            // the mixed sound track (a WAV file)
+        args.AddRange(new[]
+        {
+            "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",                            // H.264 needs even dimensions
             "-c:v", "libx264", "-preset", "medium", "-crf", "16",
             "-pix_fmt", "yuv420p", "-movflags", "+faststart",
             "-r", outFps.ToString(CultureInfo.InvariantCulture),
-            outputPath,
-        })
-            psi.ArgumentList.Add(arg);
+        });
+        if (audioPath != null)
+            args.AddRange(new[] { "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-b:a", "192k", "-shortest" });
+        args.Add(outputPath);
+        foreach (var arg in args) psi.ArgumentList.Add(arg);
 
         using var proc = Process.Start(psi) ?? throw new InvalidOperationException("Could not start FFmpeg.");
         // drain output so FFmpeg can never block on a full pipe

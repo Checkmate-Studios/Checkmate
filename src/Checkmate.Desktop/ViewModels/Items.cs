@@ -67,3 +67,43 @@ public sealed class Swatch
     public IBrush Brush { get; }
     public ICommand PickCommand { get; }
 }
+
+/// <summary>One sound clip in the sound list, with the controls for it.</summary>
+public sealed class AudioClipItem : ObservableObject
+{
+    private readonly Editor _editor;
+
+    public AudioClipItem(Editor editor, AudioClip clip) { _editor = editor; Clip = clip; }
+
+    public AudioClip Clip { get; }
+
+    public string Label => Clip.Data == null
+        ? $"{Clip.Name}  (file missing)"
+        : $"{Clip.Name}  ({Clip.Duration:0.0} s)";
+
+    public double Volume
+    {
+        get => Clip.Volume;
+        set { _editor.SetClipVolume(Clip, value); OnPropertyChanged(); }
+    }
+
+    public bool Muted
+    {
+        get => Clip.Muted;
+        set { _editor.SetClipMuted(Clip, value); OnPropertyChanged(); }
+    }
+
+    /// <summary>1-based, like the frame numbers on screen.</summary>
+    public decimal? StartFrame
+    {
+        get => Clip.StartFrame + 1;
+        set
+        {
+            if (value is { } v) _editor.SetClipStart(Clip, (int)v - 1);
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Tell the UI that something may have changed behind its back (for example an undo).</summary>
+    public void Refresh() => OnPropertyChanged(string.Empty);
+}

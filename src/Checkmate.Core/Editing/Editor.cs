@@ -31,6 +31,12 @@ public sealed class Editor
     public event Action? FrameChanged;
     /// <summary>Layers or frame count changed.</summary>
     public event Action? Structure;
+    /// <summary>A sound clip was added, removed, moved or changed (or the frame rate / length changed).</summary>
+    public event Action? AudioChanged;
+    /// <summary>The user moved to another frame (also raised during playback).</summary>
+    public event Action<int>? FrameSet;
+    /// <summary>Goes up whenever the audible result may have changed, so mixes can be cached.</summary>
+    public int AudioRevision { get; private set; }
     /// <summary>A stroke was finished (used for the recent-colors list).</summary>
     public event Action<Stroke>? StrokeCommitted;
 
@@ -41,7 +47,7 @@ public sealed class Editor
     private bool _strokeCreatedCel;
     private int _layerCounter = 1;
 
-    private void RaiseStructure() { Structure?.Invoke(); FrameChanged?.Invoke(); Redraw?.Invoke(); }
+    private void RaiseStructure() { Structure?.Invoke(); FrameChanged?.Invoke(); Redraw?.Invoke(); AudioChanged?.Invoke(); }
     private void Clamp()
     {
         CurrentFrame = Math.Clamp(CurrentFrame, 0, Project.FrameCount - 1);
@@ -60,6 +66,7 @@ public sealed class Editor
             CurrentFrame = 0;
             ActiveLayerIndex = 0;
             _layerCounter = project.Layers.Count;
+            AudioRevision++;
         }
         RaiseStructure();
     }
@@ -76,6 +83,7 @@ public sealed class Editor
         }
         FrameChanged?.Invoke();
         Redraw?.Invoke();
+        FrameSet?.Invoke(frame);
     }
 
     public void SetActiveLayer(int index)
@@ -183,6 +191,71 @@ public sealed class Editor
         FrameChanged?.Invoke();
         Redraw?.Invoke();
         return true;
+    }
+
+    // ---------- sound ----------
+
+    public void AddAudioClip(AudioClip clip)
+    {
+        lock (SyncRoot)
+        {
+            History.Execute(new ActionCommand("Add sound",
+                () => { Project.Audio.Add(clip); AudioRevision++; },
+                () => { Project.Audio.Remove(clip); AudioRevision++; }));
+        }
+        RaiseStructure();
+    }
+
+    public void RemoveAudioClip(AudioClip clip)
+    {
+        lock (SyncRoot)
+        {
+            int index = Project.Audio.IndexOf(clip);
+            if (index < 0) return;
+            History.Execute(new ActionCommand("Remove sound",
+                () => { Project.Audio.Remove(clip); AudioRevision++; },
+                () => { Project.Audio.Insert(Math.Min(index, Project.Audio.Count), clip); AudioRevision++; }));
+        }
+        RaiseStructure();
+    }
+
+    public void SetClipStart(AudioClip clip, int startFrame)
+    {
+        startFrame = Math.Max(0, startFrame);
+        lock (SyncRoot)
+        {
+            int before = clip.StartFrame;
+            if (before == startFrame) return;
+            History.Execute(new ActionCommand("Move sound",
+                () => { clip.StartFrame = startFrame; AudioRevision++; },
+                () => { clip.StartFrame = before; AudioRevision++; }));
+        }
+        RaiseStructure();
+    }
+
+    public void SetClipVolume(AudioClip clip, double volume)
+    {
+        lock (SyncRoot) { clip.Volume = Math.Clamp(volume, 0, 2); AudioRevision++; }
+        AudioChanged?.Invoke();
+    }
+
+    public void SetClipMuted(AudioClip clip, bool muted)
+    {
+        lock (SyncRoot) { clip.Muted = muted; AudioRevision++; }
+        AudioChanged?.Invoke();
+    }
+
+    /// <summary>Tell listeners the audible result changed for another reason (for example the frame rate).</summary>
+    public void NotifyAudioChanged()
+    {
+        lock (SyncRoot) AudioRevision++;
+        AudioChanged?.Invoke();
+    }
+
+    /// <summary>Make sure the animation has at least this many frames (for example to fit a long song).</summary>
+    public void EnsureFrameCount(int frames)
+    {
+        EditTimeline("Extend animation", () => { if (frames > Project.FrameCount) Project.FrameCount = frames; });
     }
 
     // ---------- timeline ----------
