@@ -1,0 +1,95 @@
+# Builds Checkmate for Windows, macOS and Linux and attaches the downloads to a GitHub Release.
+#
+# To publish a version:
+#     git tag v0.1.0
+#     git push origin v0.1.0
+# (You can also run it by hand from the "Actions" tab to test the builds; that only creates downloadable
+#  artifacts and does NOT publish a release.)
+#
+# Every download is self-contained: people do not need .NET installed.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet test --verbosity normal
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, name: windows-x64, rid: win-x64 }
+          - { os: ubuntu-latest,  name: linux-x64,   rid: linux-x64 }
+          - { os: macos-latest,   name: macos-arm64, rid: osx-arm64 }
+          - { os: macos-latest,   name: macos-x64,   rid: osx-x64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./scripts/build-windows.ps1 -NoPrompt
+          Compress-Archive -Path dist/win-x64/* -DestinationPath Checkmate-windows-x64.zip
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          bash scripts/build-linux.sh
+          tar -czf Checkmate-linux-x64.tar.gz -C dist linux-x64
+
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          bash scripts/build-macos.sh --rid ${{ matrix.rid }}
+          ditto -c -k --keepParent dist/${{ matrix.rid }}/Checkmate.app Checkmate-${{ matrix.name }}.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Checkmate-${{ matrix.name }}
+          path: |
+            Checkmate-*.zip
+            Checkmate-*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloads
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: downloads/*
+          prerelease: true
+          generate_release_notes: true
+          body: |
+            **Early preview.** Download the file for your system, unzip it and run Checkmate. No .NET needed.
+
+            - **Windows:** unzip, then run `Checkmate.exe`. If Windows says "protected your PC", click *More info*, then *Run anyway* (the app is not code-signed yet).
+            - **macOS:** unzip. If macOS blocks it, right-click `Checkmate.app` and choose *Open*, or run `xattr -dr com.apple.quarantine Checkmate.app` in Terminal. Choose the *arm64* file for Apple Silicon (M1 and newer), *x64* for Intel Macs.
+            - **Linux:** `tar -xzf Checkmate-linux-x64.tar.gz`, then run `./linux-x64/Checkmate`. If it will not start: `sudo apt install libfontconfig1 libx11-6 libice6 libsm6 libopenal1`.
+            - **MP4 export** needs [FFmpeg](https://ffmpeg.org) installed (WAV and MP3 sound work without it).
